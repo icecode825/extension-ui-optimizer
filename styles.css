@@ -1,0 +1,76 @@
+/* 插件管理中心 */
+
+.plugin-hub-hidden {
+	display: none !important;
+}
+
+.plugin-hub-note {
+	color: var(--text-faint);
+	font-size: 12px;
+	margin-top: 2px;
+}
+
+.plugin-hub-note-input {
+	resize: vertical;
+}
+
+/* 侧边栏分组：收紧分组之间的间距 */
+.vertical-tab-header .plugin-hub-group {
+	margin-top: 2px;
+	padding-top: 0;
+}
+
+.vertical-tab-header .plugin-hub-group .vertical-tab-header-group-title {
+	margin: 6px 0 2px 8px;
+	padding: 0;
+	font-size: 11px;
+	font-weight: 600;
+	color: var(--text-faint);
+}
+
+.vertical-tab-header .plugin-hub-group:first-of-type {
+	margin-top: 0;
+}
+
+/* 分组图标选择网格 */
+.plugin-hub-icon-grid {
+	display: grid;
+	grid-template-columns: repeat(8, 1fr);
+	gap: 6px;
+}
+
+.plugin-hub-icon-cell {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 6px;
+	border-radius: 6px;
+	cursor: pointer;
+	border: 1px solid transparent;
+}
+
+.plugin-hub-icon-cell:hover {
+	background: var(--background-modifier-hover);
+}
+
+.plugin-hub-icon-cell.is-active {
+	border-color: var(--interactive-accent);
+}
+
+.plugin-hub-icon-swatch {
+	width: 20px;
+	height: 20px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.plugin-hub-icon-swatch svg {
+	width: 18px;
+	height: 18px;
+}
+
+/* "全部社区插件"标题加粗 */
+.plugin-hub-list-heading .setting-item-name {
+	font-weight: 700;
+}
