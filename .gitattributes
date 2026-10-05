@@ -1,0 +1,9 @@
+# 统一行尾：仓库内一律 LF，避免 Windows 检出变成 CRLF
+# 导致 release 附件字节与 git blob 不一致（attestation 摘要对不上）
+* text=auto eol=lf
+
+*.js  text eol=lf
+*.css text eol=lf
+*.json text eol=lf
+*.md  text eol=lf
+*.yml text eol=lf
