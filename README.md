@@ -16,7 +16,7 @@ An [Obsidian](https://obsidian.md) plugin that provides a unified management cen
 
 ## Install
 
-- Community plugins marketplace: *coming after review*
+- **Community plugins**: search for "Community Extension Hub" in *Settings → Community plugins* (listed in the [Obsidian Community directory](https://community.obsidian.md/plugins/plugin-hub))
 - [BRAT](https://github.com/TfTHacker/obsidian42-brat): add `sss66666666/obsidian-plugin-hub`
 
 ### Manual
@@ -72,7 +72,7 @@ Open **Settings → Community Extension Hub** (or the grid icon in the left ribb
 
 ### 安装
 
-- 社区插件市场：审核通过后可用
+- **社区插件**：在 *设置 → 第三方插件* 搜索 "Community Extension Hub"（已上架 [Obsidian 社区目录](https://community.obsidian.md/plugins/plugin-hub)）
 - BRAT：添加 `sss66666666/obsidian-plugin-hub`
 
 ### 手动安装

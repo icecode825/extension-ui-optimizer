@@ -1,7 +1,7 @@
 {
   "id": "plugin-hub",
   "name": "Community Extension Hub",
-  "version": "1.6.9",
+  "version": "1.6.10",
   "minAppVersion": "1.4.0",
   "description": "Unified plugin manager: Chinese localization, icon groups, notes, sidebar hiding, enable/disable with Lazy Loader sync, and context menus.",
   "author": "冰块icecode",
