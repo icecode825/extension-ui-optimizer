@@ -1,10 +1,10 @@
 {
   "id": "plugin-hub",
   "name": "插件管理中心",
-  "version": "1.6.5",
+  "version": "1.6.6",
   "minAppVersion": "1.4.0",
   "description": "Unified plugin manager: Chinese localization, icon groups, notes, sidebar hiding, enable/disable with Lazy Loader sync, and context menus.",
-  "author": "sss66666666",
+  "author": "冰块icecode",
   "isDesktopOnly": true,
   "authorUrl": "https://github.com/sss66666666"
 }
