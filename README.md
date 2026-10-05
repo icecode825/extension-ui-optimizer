@@ -1,4 +1,4 @@
-# Community Extension Hub · 扩展界面优化
+# Extension UI Optimizer · 扩展界面优化
 
 An [Obsidian](https://obsidian.md) plugin that makes the plugin settings sidebar your own: attach notes, group entries with icons, and jump straight to any plugin's settings.
 
@@ -16,13 +16,13 @@ An [Obsidian](https://obsidian.md) plugin that makes the plugin settings sidebar
 
 ## Install
 
-Search for **Community Extension Hub** in *Settings → Community plugins*, or see the [Obsidian Community directory](https://community.obsidian.md/plugins/plugin-hub).
+Search for **Extension UI Optimizer** in *Settings → Community plugins*, or see the [Obsidian Community directory](https://community.obsidian.md/plugins/extension-ui-optimizer).
 
-For manual installation, grab `main.js`, `manifest.json`, and `styles.css` from the [latest release](https://github.com/icecode825/obsidian-plugin-hub/releases) and place them in `<vault>/.obsidian/plugins/plugin-hub/`.
+For manual installation, grab `main.js`, `manifest.json`, and `styles.css` from the [latest release](https://github.com/icecode825/obsidian-plugin-hub/releases) and place them in `<vault>/.obsidian/plugins/extension-ui-optimizer/`.
 
 ## Usage
 
-Open **Settings → Community Extension Hub** (or the grid icon in the left ribbon). Hover a sidebar entry to read its note; right-click any plugin row or sidebar item for more actions.
+Open **Settings → Extension UI Optimizer** (or the grid icon in the left ribbon). Hover a sidebar entry to read its note; right-click any plugin row or sidebar item for more actions.
 
 ## Notes
 
@@ -47,13 +47,13 @@ Open **Settings → Community Extension Hub** (or the grid icon in the left ribb
 
 ### 安装
 
-在 *设置 → 第三方插件* 搜索 **Community Extension Hub**（已上架 [Obsidian 社区目录](https://community.obsidian.md/plugins/plugin-hub)）。
+在 *设置 → 第三方插件* 搜索 **Extension UI Optimizer**（已上架 [Obsidian 社区目录](https://community.obsidian.md/plugins/extension-ui-optimizer)）。
 
-手动安装：从 [Releases](https://github.com/icecode825/obsidian-plugin-hub/releases) 下载 `main.js`、`manifest.json`、`styles.css`，放入 `<仓库>/.obsidian/plugins/plugin-hub/`。
+手动安装：从 [Releases](https://github.com/icecode825/obsidian-plugin-hub/releases) 下载 `main.js`、`manifest.json`、`styles.css`，放入 `<仓库>/.obsidian/plugins/extension-ui-optimizer/`。
 
 ### 使用
 
-打开 *设置 → Community Extension Hub*（或左侧栏的网格图标）。侧边栏条目悬浮可看备注；右键任意插件行或侧边栏项有更多操作。
+打开 *设置 → Extension UI Optimizer*（或左侧栏的网格图标）。侧边栏条目悬浮可看备注；右键任意插件行或侧边栏项有更多操作。
 
 ### 说明
 
