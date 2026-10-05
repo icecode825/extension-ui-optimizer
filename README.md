@@ -18,7 +18,7 @@ An [Obsidian](https://obsidian.md) plugin that makes the plugin settings sidebar
 
 Search for **Extension UI Optimizer** in *Settings → Community plugins*, or see the [Obsidian Community directory](https://community.obsidian.md/plugins/plugin-hub).
 
-For manual installation, grab `main.js`, `manifest.json`, and `styles.css` from the [latest release](https://github.com/sss66666666/obsidian-plugin-hub/releases) and place them in `<vault>/.obsidian/plugins/plugin-hub/`.
+For manual installation, grab `main.js`, `manifest.json`, and `styles.css` from the [latest release](https://github.com/icecode825/obsidian-plugin-hub/releases) and place them in `<vault>/.obsidian/plugins/plugin-hub/`.
 
 ## Usage
 
@@ -49,7 +49,7 @@ Open **Settings → Extension UI Optimizer** (or the grid icon in the left ribbo
 
 在 *设置 → 第三方插件* 搜索 **Extension UI Optimizer**（已上架 [Obsidian 社区目录](https://community.obsidian.md/plugins/plugin-hub)）。
 
-手动安装：从 [Releases](https://github.com/sss66666666/obsidian-plugin-hub/releases) 下载 `main.js`、`manifest.json`、`styles.css`，放入 `<仓库>/.obsidian/plugins/plugin-hub/`。
+手动安装：从 [Releases](https://github.com/icecode825/obsidian-plugin-hub/releases) 下载 `main.js`、`manifest.json`、`styles.css`，放入 `<仓库>/.obsidian/plugins/plugin-hub/`。
 
 ### 使用
 
