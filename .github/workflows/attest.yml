@@ -19,10 +19,27 @@ jobs:
     name: Attest
     runs-on: ubuntu-latest
     steps:
-      - name: Check out the tagged commit
-        uses: actions/checkout@v4
+      # 关键：签名对象必须是 release 里真实上传的字节。
+      # 若改为 checkout 后签 git blob，Windows CRLF / 编码差异会导致摘要不一致。
+      - name: Download release assets
+        uses: actions/github-script@v7
         with:
-          ref: ${{ github.event.release.tag_name || inputs.tag }}
+          script: |
+            const tag = context.ref || context.payload.inputs?.tag;
+            const { data: rel } = await github.rest.repos.getReleaseByTag({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              tag,
+            });
+            for (const asset of rel.assets) {
+              if (!/\.(js|css|json)$/.test(asset.name)) continue;
+              const res = await github.request(asset.url, {
+                request: { method: 'GET' },
+                headers: { accept: 'application/octet-stream' },
+              });
+              require('fs').writeFileSync(asset.name, Buffer.from(res.data));
+              core.info(`Downloaded ${asset.name} (${asset.size} bytes)`);
+            }
 
       - name: Attest main.js
         uses: actions/attest-build-provenance@v2
@@ -33,3 +50,8 @@ jobs:
         uses: actions/attest-build-provenance@v2
         with:
           subject-path: styles.css
+
+      - name: Attest manifest.json
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: manifest.json
