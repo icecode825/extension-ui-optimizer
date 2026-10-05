@@ -18,7 +18,32 @@ An [Obsidian](https://obsidian.md) plugin that provides a unified management cen
 
 - Community plugins marketplace: *coming after review*
 - [BRAT](https://github.com/TfTHacker/obsidian42-brat): add `sss66666666/obsidian-plugin-hub`
-- Manual: download `main.js`, `manifest.json`, `styles.css` from the [latest release](https://github.com/sss66666666/obsidian-plugin-hub/releases) into `<vault>/.obsidian/plugins/plugin-hub/`
+
+### Manual
+
+Pick whichever you prefer — both produce the exact same files in your vault.
+
+**Option A — download the zip (easiest)**
+
+1. Download `plugin-hub.zip` from the [latest release](https://github.com/sss66666666/obsidian-plugin-hub/releases)
+2. Unzip it directly into `<vault>/.obsidian/plugins/plugin-hub/`
+
+The archive already contains the three files at its top level, so the result should be:
+
+```
+<vault>/.obsidian/plugins/plugin-hub/
+├── main.js
+├── manifest.json
+└── styles.css
+```
+
+> If you see a `plugin-hub/plugin-hub/` nesting after unzipping, the archive was extracted into a subfolder — move the three files up one level.
+
+**Option B — download the files individually**
+
+Download `main.js`, `manifest.json`, and `styles.css` from the [latest release](https://github.com/sss66666666/obsidian-plugin-hub/releases) and place them into `<vault>/.obsidian/plugins/plugin-hub/`.
+
+Then enable **Plugin Hub** under *Settings → Community plugins*.
 
 ## Usage
 
@@ -49,7 +74,32 @@ Open **Settings → Plugin Hub** (or the grid icon in the left ribbon). See the 
 
 - 社区插件市场：审核通过后可用
 - BRAT：添加 `sss66666666/obsidian-plugin-hub`
-- 手动：从 [Releases](https://github.com/sss66666666/obsidian-plugin-hub/releases) 下载 `main.js`、`manifest.json`、`styles.css` 放入 `<仓库>/.obsidian/plugins/plugin-hub/`
+
+### 手动安装
+
+两种方式任选其一 —— 最终放进仓库的文件完全相同。
+
+**方式一：下载 zip（推荐）**
+
+1. 从 [Releases](https://github.com/sss66666666/obsidian-plugin-hub/releases) 下载 `plugin-hub.zip`
+2. 直接解压到 `<仓库>/.obsidian/plugins/plugin-hub/`
+
+压缩包内三个文件已经在根目录，解压后应当是：
+
+```
+<仓库>/.obsidian/plugins/plugin-hub/
+├── main.js
+├── manifest.json
+└── styles.css
+```
+
+> 如果解压后出现 `plugin-hub/plugin-hub/` 两层嵌套，说明文件多套了一层目录，把三个文件上移一级即可。
+
+**方式二：分别下载三个文件**
+
+从 [Releases](https://github.com/sss66666666/obsidian-plugin-hub/releases) 下载 `main.js`、`manifest.json`、`styles.css`，放入 `<仓库>/.obsidian/plugins/plugin-hub/`。
+
+完成后到 *设置 → 第三方插件* 启用 **插件管理中心**。
 
 ### 使用
 
