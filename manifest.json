@@ -1,9 +1,9 @@
 {
   "id": "plugin-hub",
-  "name": "Extension UI Optimizer",
-  "version": "1.6.14",
+  "name": "Community Extension Hub",
+  "version": "1.6.15",
   "minAppVersion": "1.4.0",
-  "description": "Personalize your plugin sidebar: attach notes to any plugin, group and icon plugins in the settings sidebar, and jump straight to a plugin's settings.",
+  "description": "Unified plugin manager: Chinese localization, icon groups, notes, sidebar hiding, enable/disable with Lazy Loader sync, and context menus.",
   "author": "冰块icecode",
   "isDesktopOnly": true,
   "authorUrl": "https://github.com/icecode825/obsidian-plugin-hub"
