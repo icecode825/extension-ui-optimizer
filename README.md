@@ -1,4 +1,4 @@
-# Plugin Hub · 插件管理中心
+# Community Extension Hub · 插件管理中心
 
 An [Obsidian](https://obsidian.md) plugin that provides a unified management center for all your community plugins.
 
@@ -43,11 +43,11 @@ The archive already contains the three files at its top level, so the result sho
 
 Download `main.js`, `manifest.json`, and `styles.css` from the [latest release](https://github.com/sss66666666/obsidian-plugin-hub/releases) and place them into `<vault>/.obsidian/plugins/plugin-hub/`.
 
-Then enable **Plugin Hub** under *Settings → Community plugins*.
+Then enable **Community Extension Hub** under *Settings → Community plugins*.
 
 ## Usage
 
-Open **Settings → Plugin Hub** (or the grid icon in the left ribbon). See the feature list above; right-click any plugin row or sidebar item for more actions.
+Open **Settings → Community Extension Hub** (or the grid icon in the left ribbon). See the feature list above; right-click any plugin row or sidebar item for more actions.
 
 ## Notes
 
