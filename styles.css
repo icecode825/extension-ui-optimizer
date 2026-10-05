@@ -1,7 +1,12 @@
 /* 插件管理中心 */
 
+/* 提高特异性以覆盖 Obsidian 侧边栏的显示规则 */
+body .vertical-tab-header .plugin-hub-hidden {
+	display: none;
+}
+
 .plugin-hub-hidden {
-	display: none !important;
+	display: none;
 }
 
 .plugin-hub-note {
