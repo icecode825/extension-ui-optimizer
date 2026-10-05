@@ -1,9 +1,9 @@
 {
   "id": "plugin-hub",
-  "name": "Community Extension Hub",
-  "version": "1.6.10",
+  "name": "Extension UI Optimizer",
+  "version": "1.6.11",
   "minAppVersion": "1.4.0",
-  "description": "Unified plugin manager: Chinese localization, icon groups, notes, sidebar hiding, enable/disable with Lazy Loader sync, and context menus.",
+  "description": "Personalize your plugin sidebar: attach notes to any plugin, group and icon plugins in the settings sidebar, and jump straight to a plugin's settings.",
   "author": "冰块icecode",
   "isDesktopOnly": true,
   "authorUrl": "https://github.com/sss66666666"
