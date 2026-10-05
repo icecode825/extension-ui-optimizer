@@ -39,7 +39,7 @@ const ZH = {
 	'settings-sidebar-organizer': { name: '设置侧边栏分组', desc: '把社区插件设置按文件夹分组、重命名、排序。' },
 	'share-note': { name: '发布到网页', desc: '一键把笔记连同主题发布为网页并得到链接。' },
 	'templater-obsidian': { name: '模板引擎 Templater', desc: '高级模板：动态日期、光标跳转、脚本自动化。' },
-	'extension-ui-optimizer': { name: '插件管理中心', desc: '统一管理插件：汉化、启停、分组、隐藏、备注。' },
+	'plugin-hub': { name: '插件管理中心', desc: '统一管理插件：汉化、启停、分组、隐藏、备注。' },
 };
 
 /* 分组可选图标（Lucide 图标名 -> 中文标签） */
@@ -88,18 +88,18 @@ const GROUP_ICONS = {
 
 /* 设置窗口文档内部的样式（styles.css 无法作用到该文档，故运行时注入） */
 const MODAL_CSS = [
-	'.extension-ui-optimizer-hidden { display: none !important; }',
-	'.extension-ui-optimizer-note { color: var(--text-faint); font-size: 12px; margin-top: 2px; }',
-	'.extension-ui-optimizer-note-input { resize: vertical; }',
-	'.vertical-tab-header .extension-ui-optimizer-group { margin-top: 2px; padding-top: 0; }',
-	'.vertical-tab-header .extension-ui-optimizer-group .vertical-tab-header-group-title { margin: 6px 0 2px 8px; padding: 0; font-size: 11px; font-weight: 600; color: var(--text-faint); }',
-	'.vertical-tab-header .extension-ui-optimizer-group:first-of-type { margin-top: 0; }',
-	'.extension-ui-optimizer-icon-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 6px; }',
-	'.extension-ui-optimizer-icon-cell { display: flex; align-items: center; justify-content: center; padding: 6px; border-radius: 6px; cursor: pointer; border: 1px solid transparent; }',
-	'.extension-ui-optimizer-icon-cell:hover { background: var(--background-modifier-hover); }',
-	'.extension-ui-optimizer-icon-cell.is-active { border-color: var(--interactive-accent); }',
-	'.extension-ui-optimizer-icon-swatch { width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; }',
-	'.extension-ui-optimizer-icon-swatch svg { width: 18px; height: 18px; }',
+	'.plugin-hub-hidden { display: none !important; }',
+	'.plugin-hub-note { color: var(--text-faint); font-size: 12px; margin-top: 2px; }',
+	'.plugin-hub-note-input { resize: vertical; }',
+	'.vertical-tab-header .plugin-hub-group { margin-top: 2px; padding-top: 0; }',
+	'.vertical-tab-header .plugin-hub-group .vertical-tab-header-group-title { margin: 6px 0 2px 8px; padding: 0; font-size: 11px; font-weight: 600; color: var(--text-faint); }',
+	'.vertical-tab-header .plugin-hub-group:first-of-type { margin-top: 0; }',
+	'.plugin-hub-icon-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 6px; }',
+	'.plugin-hub-icon-cell { display: flex; align-items: center; justify-content: center; padding: 6px; border-radius: 6px; cursor: pointer; border: 1px solid transparent; }',
+	'.plugin-hub-icon-cell:hover { background: var(--background-modifier-hover); }',
+	'.plugin-hub-icon-cell.is-active { border-color: var(--interactive-accent); }',
+	'.plugin-hub-icon-swatch { width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; }',
+	'.plugin-hub-icon-swatch svg { width: 18px; height: 18px; }',
 ].join('\n');
 
 const DEFAULT_SETTINGS = {
@@ -139,11 +139,11 @@ module.exports = class PluginHub extends Plugin {
 		clearInterval(this._poll);
 		if (this._settingsObs) this._settingsObs.disconnect();
 		this.stopRefresher();
-		document.querySelectorAll('.extension-ui-optimizer-hidden').forEach((el) => {
-			el.classList.remove('extension-ui-optimizer-hidden');
+		document.querySelectorAll('.plugin-hub-hidden').forEach((el) => {
+			el.classList.remove('plugin-hub-hidden');
 			el.style.removeProperty('display');
 		});
-		document.querySelectorAll('.extension-ui-optimizer-group').forEach((el) => el.remove());
+		document.querySelectorAll('.plugin-hub-group').forEach((el) => el.remove());
 	}
 
 	async saveSettings() {
@@ -152,7 +152,7 @@ module.exports = class PluginHub extends Plugin {
 
 	open() {
 		this.app.setting.open();
-		this.app.setting.openTabById('extension-ui-optimizer');
+		this.app.setting.openTabById('plugin-hub');
 	}
 
 	pluginConfigPath(pid, file) {
@@ -212,7 +212,7 @@ module.exports = class PluginHub extends Plugin {
 							if (id) ids.add(id);
 						}
 						for (const id of ids) {
-							if (id === 'extension-ui-optimizer' || id === 'settings-sidebar-organizer') continue;
+							if (id === 'plugin-hub' || id === 'settings-sidebar-organizer') continue;
 							assign[id] = g.title;
 						}
 					}
@@ -241,7 +241,7 @@ module.exports = class PluginHub extends Plugin {
 	communityManifests() {
 		const mans = [];
 		for (const [id, m] of Object.entries(this.app.plugins.manifests || {})) {
-			if (id === 'extension-ui-optimizer') continue;
+			if (id === 'plugin-hub') continue;
 			mans.push(m);
 		}
 		mans.sort((a, b) => this.displayName(a.id, a.name).localeCompare(this.displayName(b.id, b.name), 'zh'));
@@ -424,9 +424,9 @@ module.exports = class PluginHub extends Plugin {
 		const root = setting.modalEl;
 		if (!root.querySelector('.vertical-tab-header')) return;
 		// 把样式注入设置窗口文档（styles.css 作用不到这里）
-		if (!root.querySelector('#extension-ui-optimizer-modal-styles')) {
+		if (!root.querySelector('#plugin-hub-modal-styles')) {
 			const st = document.createElement('style');
-			st.id = 'extension-ui-optimizer-modal-styles';
+			st.id = 'plugin-hub-modal-styles';
 			st.textContent = MODAL_CSS;
 			root.appendChild(st);
 		}
@@ -436,10 +436,10 @@ module.exports = class PluginHub extends Plugin {
 		root.querySelectorAll('.vertical-tab-nav-item[data-setting-id]').forEach((el) => {
 			const id = el.getAttribute('data-setting-id');
 			if (hidden.has(id)) {
-				el.classList.add('extension-ui-optimizer-hidden');
+				el.classList.add('plugin-hub-hidden');
 				el.style.display = 'none';
-			} else if (el.classList.contains('extension-ui-optimizer-hidden')) {
-				el.classList.remove('extension-ui-optimizer-hidden');
+			} else if (el.classList.contains('plugin-hub-hidden')) {
+				el.classList.remove('plugin-hub-hidden');
 				el.style.removeProperty('display');
 			}
 		});
@@ -454,10 +454,10 @@ module.exports = class PluginHub extends Plugin {
 			const id = el.getAttribute('data-plugin-id');
 			const note = (this.settings.notes && this.settings.notes[id]) || '';
 			const info = el.querySelector('.setting-item-info') || el;
-			let noteEl = info.querySelector(':scope > .extension-ui-optimizer-note');
+			let noteEl = info.querySelector(':scope > .plugin-hub-note');
 			if (note) {
 				if (!noteEl) {
-					noteEl = info.createDiv({ cls: 'extension-ui-optimizer-note' });
+					noteEl = info.createDiv({ cls: 'plugin-hub-note' });
 				}
 				if (noteEl.textContent !== note) noteEl.textContent = note;
 			} else if (noteEl) {
@@ -481,10 +481,10 @@ module.exports = class PluginHub extends Plugin {
 		const usedGroups = groups.filter((name) => Object.values(assign).includes(name));
 		let anchor = commGroup;
 		for (const name of usedGroups) {
-			let grp = header.querySelector(`:scope > .extension-ui-optimizer-group[data-hub-group="${CSS.escape(name)}"]`);
+			let grp = header.querySelector(`:scope > .plugin-hub-group[data-hub-group="${CSS.escape(name)}"]`);
 			if (!grp) {
 				grp = document.createElement('div');
-				grp.className = 'vertical-tab-header-group extension-ui-optimizer-group';
+				grp.className = 'vertical-tab-header-group plugin-hub-group';
 				grp.dataset.hubGroup = name;
 				const title = document.createElement('div');
 				title.className = 'vertical-tab-header-group-title';
@@ -503,7 +503,7 @@ module.exports = class PluginHub extends Plugin {
 		}
 
 		// 归属被删除/改动的项：从 hub 组容器移回社区组
-		header.querySelectorAll(':scope > .extension-ui-optimizer-group').forEach((grp) => {
+		header.querySelectorAll(':scope > .plugin-hub-group').forEach((grp) => {
 			const gname = grp.dataset.hubGroup;
 			grp.querySelectorAll('.vertical-tab-nav-item[data-setting-id]').forEach((el) => {
 				const id = el.getAttribute('data-setting-id');
@@ -512,7 +512,7 @@ module.exports = class PluginHub extends Plugin {
 		});
 
 		// 移除已无成员/已删除的分组容器
-		header.querySelectorAll(':scope > .extension-ui-optimizer-group').forEach((grp) => {
+		header.querySelectorAll(':scope > .plugin-hub-group').forEach((grp) => {
 			if (!usedGroups.includes(grp.dataset.hubGroup)) grp.remove();
 		});
 
@@ -555,11 +555,11 @@ class IconGridModal extends Modal {
 	onOpen() {
 		this.titleEl.setText('选择分组图标');
 		const { contentEl } = this;
-		const grid = contentEl.createDiv({ cls: 'extension-ui-optimizer-icon-grid' });
+		const grid = contentEl.createDiv({ cls: 'plugin-hub-icon-grid' });
 		for (const [icon, label] of Object.entries(GROUP_ICONS)) {
-			const cell = grid.createDiv({ cls: 'extension-ui-optimizer-icon-cell' + (icon === this.current ? ' is-active' : '') });
+			const cell = grid.createDiv({ cls: 'plugin-hub-icon-cell' + (icon === this.current ? ' is-active' : '') });
 			cell.title = label;
-			const sw = cell.createDiv({ cls: 'extension-ui-optimizer-icon-swatch' });
+			const sw = cell.createDiv({ cls: 'plugin-hub-icon-swatch' });
 			setIcon(sw, icon);
 			cell.addEventListener('click', () => {
 				this.onPick(icon);
@@ -584,7 +584,7 @@ class NoteModal extends Modal {
 	onOpen() {
 		this.titleEl.setText('编辑备注');
 		const { contentEl } = this;
-		const input = contentEl.createEl('textarea', { cls: 'extension-ui-optimizer-note-input' });
+		const input = contentEl.createEl('textarea', { cls: 'plugin-hub-note-input' });
 		input.value = this.value || '# ';
 		input.placeholder = '给这个插件写点什么…（# 开头会显示为备注标记）';
 		input.rows = 4;
@@ -676,7 +676,7 @@ class HubTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName('全部社区插件')
-			.setClass('extension-ui-optimizer-list-heading')
+			.setClass('plugin-hub-list-heading')
 			.setHeading()
 			.addToggle((t) => t
 				.setValue(p.settings.lang === 'zh')
@@ -702,10 +702,10 @@ class HubTab extends PluginSettingTab {
 
 			// 备注独立一行显示（灰色小字）
 			const renderNote = () => {
-				row.descEl.querySelector('.extension-ui-optimizer-note')?.remove();
+				row.descEl.querySelector('.plugin-hub-note')?.remove();
 				const noteNow = p.settings.notes[m.id] || '';
 				if (noteNow) {
-					const noteEl = row.descEl.createDiv({ cls: 'extension-ui-optimizer-note' });
+					const noteEl = row.descEl.createDiv({ cls: 'plugin-hub-note' });
 					noteEl.setText(noteNow);
 					row.nameEl.title = noteNow;
 				} else {
@@ -805,7 +805,7 @@ class HubTab extends PluginSettingTab {
 		const syncHeading = () => {
 			try {
 				const h3 = containerEl.querySelector('h3');
-				const nameEl = containerEl.querySelector('.extension-ui-optimizer-list-heading .setting-item-name');
+				const nameEl = containerEl.querySelector('.plugin-hub-list-heading .setting-item-name');
 				if (h3 && nameEl) {
 					const cs = getComputedStyle(h3);
 					nameEl.style.fontWeight = cs.fontWeight;

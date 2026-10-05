@@ -1,31 +1,31 @@
 /* 插件管理中心 */
 
 /* 提高特异性以覆盖 Obsidian 侧边栏的显示规则 */
-body .vertical-tab-header .extension-ui-optimizer-hidden {
+body .vertical-tab-header .plugin-hub-hidden {
 	display: none;
 }
 
-.extension-ui-optimizer-hidden {
+.plugin-hub-hidden {
 	display: none;
 }
 
-.extension-ui-optimizer-note {
+.plugin-hub-note {
 	color: var(--text-faint);
 	font-size: 12px;
 	margin-top: 2px;
 }
 
-.extension-ui-optimizer-note-input {
+.plugin-hub-note-input {
 	resize: vertical;
 }
 
 /* 侧边栏分组：收紧分组之间的间距 */
-.vertical-tab-header .extension-ui-optimizer-group {
+.vertical-tab-header .plugin-hub-group {
 	margin-top: 2px;
 	padding-top: 0;
 }
 
-.vertical-tab-header .extension-ui-optimizer-group .vertical-tab-header-group-title {
+.vertical-tab-header .plugin-hub-group .vertical-tab-header-group-title {
 	margin: 6px 0 2px 8px;
 	padding: 0;
 	font-size: 11px;
@@ -33,18 +33,18 @@ body .vertical-tab-header .extension-ui-optimizer-hidden {
 	color: var(--text-faint);
 }
 
-.vertical-tab-header .extension-ui-optimizer-group:first-of-type {
+.vertical-tab-header .plugin-hub-group:first-of-type {
 	margin-top: 0;
 }
 
 /* 分组图标选择网格 */
-.extension-ui-optimizer-icon-grid {
+.plugin-hub-icon-grid {
 	display: grid;
 	grid-template-columns: repeat(8, 1fr);
 	gap: 6px;
 }
 
-.extension-ui-optimizer-icon-cell {
+.plugin-hub-icon-cell {
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -54,15 +54,15 @@ body .vertical-tab-header .extension-ui-optimizer-hidden {
 	border: 1px solid transparent;
 }
 
-.extension-ui-optimizer-icon-cell:hover {
+.plugin-hub-icon-cell:hover {
 	background: var(--background-modifier-hover);
 }
 
-.extension-ui-optimizer-icon-cell.is-active {
+.plugin-hub-icon-cell.is-active {
 	border-color: var(--interactive-accent);
 }
 
-.extension-ui-optimizer-icon-swatch {
+.plugin-hub-icon-swatch {
 	width: 20px;
 	height: 20px;
 	display: flex;
@@ -70,12 +70,12 @@ body .vertical-tab-header .extension-ui-optimizer-hidden {
 	justify-content: center;
 }
 
-.extension-ui-optimizer-icon-swatch svg {
+.plugin-hub-icon-swatch svg {
 	width: 18px;
 	height: 18px;
 }
 
 /* "全部社区插件"标题加粗 */
-.extension-ui-optimizer-list-heading .setting-item-name {
+.plugin-hub-list-heading .setting-item-name {
 	font-weight: 700;
 }
