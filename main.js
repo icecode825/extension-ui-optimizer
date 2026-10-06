@@ -820,7 +820,7 @@ class HubTab extends PluginSettingTab {
 			.setHeading()
 			.addToggle((t) => t
 				.setValue(p.settings.lang === 'zh')
-				.setTooltip('汉化：内置 Top 150 热门插件（合计 1.14 亿+ 次下载）的中文名称与描述。开 = 汉化，关 = 原生')
+				.setTooltip('汉化：内置下载量 Top 150 的热门插件中文名称与描述（第 150 名也有 15 万+ 下载）。开 = 汉化，关 = 原生')
 				.onChange(async (v) => {
 					p.settings.lang = v ? 'zh' : 'original';
 					await p.saveSettings();
@@ -1070,4 +1070,5 @@ class HubTab extends PluginSettingTab {
 	}
 }
 
+/* nosourcemap */
 /* nosourcemap */
