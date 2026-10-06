@@ -230,6 +230,7 @@ const MODAL_CSS = [
 	'.extension-ui-optimizer-note { color: var(--text-faint); font-size: 12px; margin-top: 2px; }',
 	'.extension-ui-optimizer-note-input { resize: vertical; }',
 	'.extension-ui-optimizer-count { color: var(--text-faint); font-size: 12px; margin-left: 6px; }',
+	'.extension-ui-optimizer-row { cursor: pointer; }',
 	'.extension-ui-optimizer-lang-label { margin-right: 6px; font-size: 13px; }',
 	'.vertical-tab-header .extension-ui-optimizer-group { margin-top: 2px; padding-top: 0; }',
 	'.vertical-tab-header .extension-ui-optimizer-group .vertical-tab-header-group-title { margin: 6px 0 2px 8px; padding: 0; font-size: 11px; font-weight: 600; color: var(--text-faint); }',
@@ -841,7 +842,18 @@ class HubTab extends PluginSettingTab {
 
 			const row = new Setting(containerEl)
 				.setName(p.displayName(m.id, m.name))
+				.setClass('extension-ui-optimizer-row')
 				.setDesc(desc + (m.version ? `　· v${m.version}` : '') + (hidden ? '　· 已从侧边栏隐藏' : ''));
+
+			// 点击卡片空白处（非按钮/控件区域）直接打开该插件的原生设置页
+			row.settingEl.addEventListener('click', (ev) => {
+				if (ev.target.closest('button, .checkbox-container, select, input, textarea, .extra-setting-button, .clickable-icon')) return;
+				if ((window.getSelection() || '').toString()) return; // 正在选择文字时不跳转
+				try {
+					this.app.setting.open();
+					this.app.setting.openTabById(m.id);
+				} catch (e) { /* 插件未启用时无设置页 */ }
+			});
 
 			// 备注独立一行显示（灰色小字）
 			const renderNote = () => {
