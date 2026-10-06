@@ -9,7 +9,7 @@ An [Obsidian](https://obsidian.md) plugin that makes the plugin settings sidebar
 - **Notes on any plugin** — attach a personal note to a plugin; shown in the manager, on hover in the settings sidebar, and synced into the native "Community plugins" list
 - **Grouped, icon-decorated sidebar** — organize plugins into groups in the settings sidebar; each group picks its own icon (40 built-in choices), and plugins with a native icon keep it
 - **Quick access to settings** — jump to a plugin's settings in one click, plus right-click for hotkeys, view details, check updates, open the plugin folder, and uninstall
-- **Chinese localization** — built-in Chinese names & descriptions for common community plugins, with a toggle between localized and original display
+- **Chinese localization (Top 150)** — built-in Chinese names & descriptions for the top 150 community plugins by downloads (110M+ combined installs), with a toggle between localized and original display
 - **Enable / disable with one click** — changes are saved and automatically synced with the [Lazy Loader](https://github.com/running-grass/obsidian-lazy-plugins) plugin so disabled plugins stay disabled after restart
 - **Sidebar hiding** — hide plugins from the settings sidebar; they remain manageable in the manager
 - **No flicker** — all row operations update the DOM in place and preserve scroll position
@@ -40,7 +40,7 @@ Open **Settings → Extension UI Optimizer** (or the grid icon in the left ribbo
 - **插件备注**：给任意插件写备注，管理中心、侧边栏悬浮、原生第三方插件列表三处同步显示
 - **侧边栏美化**：插件按分组显示在设置侧边栏，每组可自定义图标（内置 40 种），插件自带图标优先
 - **设置快捷入口**：一键跳转到插件设置；右键还可设置快捷键、查看详情、检查更新、打开插件文件夹、卸载
-- **汉化**：内置常见社区插件的中文名称与描述，可在汉化/原生之间一键切换
+- **热门插件汉化（Top 150）**：内置下载量前 150 的社区插件中文名称与描述（合计下载超 1.1 亿次），可在汉化/原生之间一键切换
 - **一键启停**：启用/禁用即时生效，并自动同步 Lazy Loader 的启动类型（禁用后重启不会被拉起）
 - **侧边栏隐藏**：把插件从设置侧边栏收起（仍可在管理中心管理）
 - **无闪烁**：所有行内操作就地更新DOM，保持滚动位置
