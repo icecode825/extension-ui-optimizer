@@ -533,6 +533,19 @@ module.exports = class PluginHub extends Plugin {
 			const root = setting.modalEl;
 			const open = root.querySelector('.vertical-tab-header') !== null;
 			if (open) {
+				// 已安装插件集合变化（安装/卸载）时立刻重建列表，无需重开设置页
+				try {
+					const ids = Object.keys(this.app.plugins.manifests || {});
+					const sig = ids.length + ':' + ids.join('|');
+					if (this._pluginSig === undefined) this._pluginSig = sig;
+					else if (this._pluginSig !== sig) {
+						this._pluginSig = sig;
+						clearTimeout(this._sigTimer);
+						this._sigTimer = setTimeout(() => {
+							try { if (this.tab) this.tab.display(); } catch (e) { /* ignore */ }
+						}, 150);
+					}
+				} catch (e) { /* ignore */ }
 				if (this._settingsObsTarget !== root) {
 					if (this._settingsObs) this._settingsObs.disconnect();
 					this._settingsObs = new MutationObserver(() => {
@@ -558,11 +571,15 @@ module.exports = class PluginHub extends Plugin {
 					this._settingsObsTarget = root;
 				}
 				this.applyToSettingsDom();
-			} else if (this._settingsObs) {
-				this._settingsObs.disconnect();
-				root.removeEventListener('contextmenu', this._ctxHandler, true);
-				this._settingsObs = null;
-				this._settingsObsTarget = null;
+			} else {
+				if (this._settingsObs) {
+					this._settingsObs.disconnect();
+					root.removeEventListener('contextmenu', this._ctxHandler, true);
+					this._settingsObs = null;
+					this._settingsObsTarget = null;
+				}
+				// 关闭时重置签名，下次打开由 display() 重建，避免多余刷新
+				this._pluginSig = undefined;
 			}
 		} catch (e) { /* ignore */ }
 	}
@@ -626,8 +643,8 @@ module.exports = class PluginHub extends Plugin {
 		const assign = this.settings.pluginGroup || {};
 		const groupIcons = this.settings.groupIcons || {};
 
-		// 确保每个使用中的分组有容器（按 settings 顺序插在社区插件组之后）
-		const usedGroups = groups.filter((name) => Object.values(assign).includes(name));
+		// 每个分组都立即在侧边栏占位（新建的空分组也马上可见，便于确认与拖放归属）
+		const usedGroups = groups;
 		let anchor = commGroup;
 		for (const name of usedGroups) {
 			let grp = header.querySelector(`:scope > .extension-ui-optimizer-group[data-hub-group="${CSS.escape(name)}"]`);
@@ -840,6 +857,7 @@ class HubTab extends PluginSettingTab {
 		listHeading.controlEl.insertBefore(langLabel, listHeading.controlEl.firstChild);
 		this.toggleRefs = [];
 		this.rowRefs = [];
+		this.groupDdRefs = [];
 
 		const pm = this.app.plugins;
 		for (const m of p.communityManifests()) {
@@ -933,6 +951,7 @@ class HubTab extends PluginSettingTab {
 
 			// 分组下拉（归组后侧边栏即时变化，行内无需重建）
 			row.addDropdown((d) => {
+				this.groupDdRefs.push(d);
 				d.addOption('', '未分组');
 				for (const g of p.settings.groups || []) d.addOption(g, g);
 				d.setValue(p.settings.pluginGroup[m.id] || '');
@@ -1014,6 +1033,7 @@ class HubTab extends PluginSettingTab {
 					await p.saveSettings();
 					p.applyToSettingsDom();
 					this.renderGroups(section);
+					this.refreshGroupDropdowns();
 				}));
 
 		const groups = p.settings.groups || [];
@@ -1066,6 +1086,7 @@ class HubTab extends PluginSettingTab {
 						await p.saveSettings();
 						p.applyToSettingsDom();
 						this.renderGroups(section);
+						this.refreshGroupDropdowns();
 					}));
 			const countSpan = groupRow.nameEl.createSpan({ cls: 'extension-ui-optimizer-count' });
 			countSpan.setText('· ' + count);
@@ -1074,6 +1095,21 @@ class HubTab extends PluginSettingTab {
 
 	stopRefresher() {
 		if (this._refresher) { clearInterval(this._refresher); this._refresher = null; }
+	}
+
+	/* 分组增删后就地刷新所有插件行的分组下拉选项（避免必须重开设置页） */
+	refreshGroupDropdowns() {
+		const p = this.plugin;
+		for (const d of this.groupDdRefs || []) {
+			try {
+				if (!d || !d.selectEl) continue;
+				const cur = d.getValue();
+				d.selectEl.empty();
+				d.addOption('', '未分组');
+				for (const g of p.settings.groups || []) d.addOption(g, g);
+				d.setValue(cur && (p.settings.groups || []).includes(cur) ? cur : '');
+			} catch (e) { /* ignore */ }
+		}
 	}
 
 	startRefresher() {
