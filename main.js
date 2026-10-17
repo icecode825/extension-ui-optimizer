@@ -382,7 +382,6 @@ module.exports = class PluginHub extends Plugin {
 	communityManifests() {
 		const mans = [];
 		for (const [id, m] of Object.entries(this.app.plugins.manifests || {})) {
-			if (id === 'extension-ui-optimizer') continue;
 			mans.push(m);
 		}
 		mans.sort((a, b) => this.displayName(a.id, a.name).localeCompare(this.displayName(b.id, b.name), 'zh'));
@@ -503,23 +502,26 @@ module.exports = class PluginHub extends Plugin {
 				} catch (e) { /* ignore */ }
 			}));
 		menu.addSeparator();
-		menu.addItem((item) => item
-			.setTitle('卸载')
-			.setIcon('trash-2')
-			.onClick(() => {
-				new ConfirmModal(this.app, '确定卸载「' + this.displayName(pid, pid) + '」吗？', async () => {
-					try {
-						await this.app.plugins.uninstallPlugin(pid);
-					} catch (e) { return; /* 卸载失败不动任何数据 */ }
-					// 卸载成功：清理该插件的分组归属、备注、隐藏标记，避免统计残留
-					delete this.settings.pluginGroup[pid];
-					delete this.settings.notes[pid];
-					this.settings.hiddenPlugins = (this.settings.hiddenPlugins || []).filter((x) => x !== pid);
-					await this.saveSettings();
-					this.applyToSettingsDom();
-					if (this.tab) this.tab.display();
-				}).open();
-			}));
+		// 不允许卸载自己（插件运行中卸载自身会导致界面失效）
+		if (pid !== this.manifest.id) {
+			menu.addItem((item) => item
+				.setTitle('卸载')
+				.setIcon('trash-2')
+				.onClick(() => {
+					new ConfirmModal(this.app, '确定卸载「' + this.displayName(pid, pid) + '」吗？', async () => {
+						try {
+							await this.app.plugins.uninstallPlugin(pid);
+						} catch (e) { return; /* 卸载失败不动任何数据 */ }
+						// 卸载成功：清理该插件的分组归属、备注、隐藏标记，避免统计残留
+						delete this.settings.pluginGroup[pid];
+						delete this.settings.notes[pid];
+						this.settings.hiddenPlugins = (this.settings.hiddenPlugins || []).filter((x) => x !== pid);
+						await this.saveSettings();
+						this.applyToSettingsDom();
+						if (this.tab) this.tab.display();
+					}).open();
+				}));
+		}
 		menu.showAtMouseEvent(ev);
 	}
 
@@ -942,18 +944,21 @@ class HubTab extends PluginSettingTab {
 				});
 			});
 
-			row.addToggle((t) => t
-				.setValue(enabled)
-				.setTooltip('启用/禁用')
-				.onChange(async (v) => {
-					p.setEnabled(m.id, v);
-					// 开关状态由本行点击即时正确，无需重建页面
-				}));
+			// 自己不能从自身面板里启用/禁用（会当场卸载自身、界面消失）
+			if (m.id !== p.manifest.id) {
+				row.addToggle((t) => t
+					.setValue(enabled)
+					.setTooltip('启用/禁用')
+					.onChange(async (v) => {
+						p.setEnabled(m.id, v);
+						// 开关状态由本行点击即时正确，无需重建页面
+					}));
 
-			this.toggleRefs.push({
-				id: m.id,
-				el: row.controlEl ? row.controlEl.querySelector('.checkbox-container') : null,
-			});
+				this.toggleRefs.push({
+					id: m.id,
+					el: row.controlEl ? row.controlEl.querySelector('.checkbox-container') : null,
+				});
+			}
 		}
 
 		/* 每 1.5 秒校准一次开关显示状态（只改 DOM，不触发 onChange） */
