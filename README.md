@@ -12,6 +12,7 @@ An [Obsidian](https://obsidian.md) plugin that makes the plugin settings sidebar
 - **Chinese localization (Top 150)** — built-in Chinese names & descriptions for the top 150 community plugins by downloads (110M+ combined installs), with a toggle between localized and original display
 - **Enable / disable with one click** — changes are saved and automatically synced with the [Lazy Loader](https://github.com/running-grass/obsidian-lazy-plugins) plugin so disabled plugins stay disabled after restart
 - **Sidebar hiding** — hide plugins from the settings sidebar; they remain manageable in the manager
+- **Manages itself too** — this plugin appears in its own list, so you can group it, give it a note, or hide it like any other
 - **No flicker** — all row operations update the DOM in place and preserve scroll position
 
 ## Install
@@ -43,6 +44,7 @@ Open **Settings → Extension UI Optimizer** (or the grid icon in the left ribbo
 - **热门插件汉化（Top 150）**：内置下载量前 150 的社区插件中文名称与描述（合计下载超 1.1 亿次），可在汉化/原生之间一键切换
 - **一键启停**：启用/禁用即时生效，并自动同步 Lazy Loader 的启动类型（禁用后重启不会被拉起）
 - **侧边栏隐藏**：把插件从设置侧边栏收起（仍可在管理中心管理）
+- **自己也能被管理**：本插件出现在自己的列表中，可以像其他插件一样分组、写备注、隐藏
 - **无闪烁**：所有行内操作就地更新DOM，保持滚动位置
 
 ### 安装
