@@ -510,8 +510,14 @@ module.exports = class PluginHub extends Plugin {
 				new ConfirmModal(this.app, '确定卸载「' + this.displayName(pid, pid) + '」吗？', async () => {
 					try {
 						await this.app.plugins.uninstallPlugin(pid);
-						if (this.tab) this.tab.display();
-					} catch (e) { /* ignore */ }
+					} catch (e) { return; /* 卸载失败不动任何数据 */ }
+					// 卸载成功：清理该插件的分组归属、备注、隐藏标记，避免统计残留
+					delete this.settings.pluginGroup[pid];
+					delete this.settings.notes[pid];
+					this.settings.hiddenPlugins = (this.settings.hiddenPlugins || []).filter((x) => x !== pid);
+					await this.saveSettings();
+					this.applyToSettingsDom();
+					if (this.tab) this.tab.display();
 				}).open();
 			}));
 		menu.showAtMouseEvent(ev);
@@ -1007,7 +1013,8 @@ class HubTab extends PluginSettingTab {
 
 		const groups = p.settings.groups || [];
 		groups.forEach((name, idx) => {
-			const count = Object.values(p.settings.pluginGroup || {}).filter((g) => g === name).length;
+			const manifests = p.app.plugins.manifests || {};
+			const count = Object.entries(p.settings.pluginGroup || {}).filter(([pid, g]) => g === name && manifests[pid]).length;
 			const groupRow = new Setting(section)
 				.setName(name)
 				.addExtraButton((b) => b
