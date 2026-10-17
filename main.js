@@ -284,6 +284,16 @@ module.exports = class PluginHub extends Plugin {
 			el.classList.remove('extension-ui-optimizer-hidden');
 			el.style.removeProperty('display');
 		});
+		// 先把移入分组容器的导航项放回 Obsidian 原生容器，避免连带删除
+		try {
+			const commItems = document.querySelector('.vertical-tab-header-group-items[data-section="community-plugins"]');
+			const mans = (this.app.plugins && this.app.plugins.manifests) || {};
+			document.querySelectorAll('.extension-ui-optimizer-group .vertical-tab-nav-item[data-setting-id]').forEach((el) => {
+				const id = el.getAttribute('data-setting-id');
+				if (id && mans[id]) { if (commItems) commItems.appendChild(el); }
+				else el.remove(); // 已卸载插件的幽灵项直接丢弃
+			});
+		} catch (e) { /* ignore */ }
 		document.querySelectorAll('.extension-ui-optimizer-group').forEach((el) => el.remove());
 	}
 
@@ -676,6 +686,17 @@ module.exports = class PluginHub extends Plugin {
 				if (assign[id] === name) grp.querySelector('.vertical-tab-header-group-items').appendChild(el);
 			});
 		}
+
+		// 清理已卸载插件残留的幽灵导航项：Obsidian 重建导航时只清理自己的容器，
+		// 被本插件移入分组容器的节点会幸存下来（仍可点开缓存中的设置页）
+		const liveManifests = this.app.plugins.manifests || {};
+		header.querySelectorAll('.vertical-tab-nav-item[data-setting-id]').forEach((el) => {
+			const id = el.getAttribute('data-setting-id');
+			if (!id) return;
+			const inHubGroup = el.closest('.extension-ui-optimizer-group') !== null;
+			const inCommSection = el.closest('.vertical-tab-header-group-items[data-section="community-plugins"]') !== null;
+			if ((inHubGroup || inCommSection) && !liveManifests[id]) el.remove();
+		});
 
 		// 归属被删除/改动的项：从 hub 组容器移回社区组
 		header.querySelectorAll(':scope > .extension-ui-optimizer-group').forEach((grp) => {
