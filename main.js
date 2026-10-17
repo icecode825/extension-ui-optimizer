@@ -688,14 +688,17 @@ module.exports = class PluginHub extends Plugin {
 		}
 
 		// 清理已卸载插件残留的幽灵导航项：Obsidian 重建导航时只清理自己的容器，
-		// 被本插件移入分组容器的节点会幸存下来（仍可点开缓存中的设置页）
+		// 被本插件移入分组容器的节点会幸存下来（仍可点开缓存中的设置页）；同时去除重复项
 		const liveManifests = this.app.plugins.manifests || {};
-		header.querySelectorAll('.vertical-tab-nav-item[data-setting-id]').forEach((el) => {
+		const seenIds = new Set();
+		Array.from(header.querySelectorAll('.vertical-tab-nav-item[data-setting-id]')).reverse().forEach((el) => {
 			const id = el.getAttribute('data-setting-id');
 			if (!id) return;
 			const inHubGroup = el.closest('.extension-ui-optimizer-group') !== null;
 			const inCommSection = el.closest('.vertical-tab-header-group-items[data-section="community-plugins"]') !== null;
-			if ((inHubGroup || inCommSection) && !liveManifests[id]) el.remove();
+			if ((inHubGroup || inCommSection) && !liveManifests[id]) { el.remove(); return; }
+			if (seenIds.has(id)) { el.remove(); return; }
+			seenIds.add(id);
 		});
 
 		// 归属被删除/改动的项：从 hub 组容器移回社区组
