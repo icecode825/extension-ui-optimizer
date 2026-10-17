@@ -396,6 +396,15 @@ module.exports = class PluginHub extends Plugin {
 		return false;
 	}
 
+	/* 是否注册了设置页（没有设置页的插件不会出现在左侧设置栏） */
+	hasSettingsTab(id) {
+		try {
+			const tabs = this.app.setting && this.app.setting.pluginTabs;
+			if (!Array.isArray(tabs)) return true; // 无法判断时不误标
+			return tabs.some((t) => t && t.id === id);
+		} catch (e) { return true; }
+	}
+
 	setEnabled(pid, enabled) {
 		const pm = this.app.plugins;
 		if (enabled) {
@@ -865,11 +874,12 @@ class HubTab extends PluginSettingTab {
 
 			const desc = p.displayDesc(m.id, m.description || '');
 			const hidden = (p.settings.hiddenPlugins || []).includes(m.id);
+			const noTab = enabled && !p.hasSettingsTab(m.id);
 
 			const row = new Setting(containerEl)
 				.setName(p.displayName(m.id, m.name))
 				.setClass('extension-ui-optimizer-row')
-				.setDesc(desc + (m.version ? `　· v${m.version}` : '') + (hidden ? '　· 已从侧边栏隐藏' : ''));
+				.setDesc(desc + (m.version ? `　· v${m.version}` : '') + (hidden ? '　· 已从侧边栏隐藏' : '') + (noTab ? '　· 无设置页（不会出现在左侧栏）' : ''));
 
 			// 点击卡片空白处（非按钮/控件区域）直接打开该插件的原生设置页
 			row.settingEl.addEventListener('click', (ev) => {
@@ -899,7 +909,7 @@ class HubTab extends PluginSettingTab {
 			const refreshNameDesc = () => {
 				const hid = (p.settings.hiddenPlugins || []).includes(m.id);
 				row.setName(p.displayName(m.id, m.name));
-				row.setDesc(p.displayDesc(m.id, m.description || '') + (m.version ? `　· v${m.version}` : '') + (hid ? '　· 已从侧边栏隐藏' : ''));
+				row.setDesc(p.displayDesc(m.id, m.description || '') + (m.version ? `　· v${m.version}` : '') + (hid ? '　· 已从侧边栏隐藏' : '') + (p.isEnabled(m.id) && !p.hasSettingsTab(m.id) ? '　· 无设置页（不会出现在左侧栏）' : ''));
 				renderNote();
 			};
 			this.rowRefs.push({ m, refreshNameDesc });
