@@ -277,24 +277,68 @@ module.exports = class PluginHub extends Plugin {
 	}
 
 	onunload() {
-		clearInterval(this._poll);
-		if (this._settingsObs) this._settingsObs.disconnect();
-		this.stopRefresher();
-		document.querySelectorAll('.extension-ui-optimizer-hidden').forEach((el) => {
+		// 先无条件清掉计时器与观察器，避免卸载后还有回调继续改 DOM
+		try {
+			clearInterval(this._poll);
+			clearTimeout(this._debounce);
+			clearTimeout(this._sigTimer);
+			if (this._settingsObs) this._settingsObs.disconnect();
+			// stopRefresher 是设置页（HubTab）的方法，插件本身没有它；
+			// 旧版直接写 this.stopRefresher() 会抛 TypeError，把后面的还原全跳过，
+			// 于是"禁用插件后侧边栏分组不还原、要重启 Obsidian"——这才是真正的根因
+			if (this.tab && typeof this.tab.stopRefresher === 'function') this.tab.stopRefresher();
+		} catch (e) { /* ignore */ }
+
+		try {
+			this.restoreSettingsDom();
+		} catch (e) { /* ignore */ }
+	}
+
+	/* 把设置侧边栏还原成 Obsidian 原生样子（禁用插件时调用） */
+	restoreSettingsDom() {
+		// 设置窗口渲染在独立文档（弹出窗口）里，主窗口 document 查不到它的节点，
+		// 所以要从 app.setting.modalEl 取根节点来查（以前直接查 document，一个都找不到）
+		let root = null;
+		try {
+			root = (this.app && this.app.setting && this.app.setting.modalEl) || null;
+		} catch (e) { root = null; }
+		const scope = root || document;
+		const q = (selector) => Array.from(scope.querySelectorAll(selector));
+
+		// 1. 取消我们注入的隐藏
+		q('.extension-ui-optimizer-hidden').forEach((el) => {
 			el.classList.remove('extension-ui-optimizer-hidden');
 			el.style.removeProperty('display');
 		});
-		// 先把移入分组容器的导航项放回 Obsidian 原生容器，避免连带删除
-		try {
-			const commItems = document.querySelector('.vertical-tab-header-group-items[data-section="community-plugins"]');
-			const mans = (this.app.plugins && this.app.plugins.manifests) || {};
-			document.querySelectorAll('.extension-ui-optimizer-group .vertical-tab-nav-item[data-setting-id]').forEach((el) => {
-				const id = el.getAttribute('data-setting-id');
-				if (id && mans[id]) { if (commItems) commItems.appendChild(el); }
-				else el.remove(); // 已卸载插件的幽灵项直接丢弃
-			});
-		} catch (e) { /* ignore */ }
-		document.querySelectorAll('.extension-ui-optimizer-group').forEach((el) => el.remove());
+
+		// 2. 把移入分组容器的导航项放回 Obsidian 原生容器，避免连带删除
+		const mans = (this.app.plugins && this.app.plugins.manifests) || {};
+		const commItems = q('.vertical-tab-header-group-items[data-section="community-plugins"]')[0] || null;
+		q('.extension-ui-optimizer-group .vertical-tab-nav-item[data-setting-id]').forEach((el) => {
+			const id = el.getAttribute('data-setting-id');
+			if (id && mans[id]) { if (commItems) commItems.appendChild(el); }
+			else el.remove(); // 已卸载插件的幽灵项直接丢弃
+		});
+
+		// 3. 清掉注入的分组容器、样式、假图标、备注样式与悬浮说明
+		q('.extension-ui-optimizer-group').forEach((el) => el.remove());
+		q('#extension-ui-optimizer-modal-styles').forEach((el) => el.remove());
+		q('.vertical-tab-nav-item-icon[data-hub-icon]').forEach((el) => el.remove());
+		q('.extension-ui-optimizer-note').forEach((el) => el.remove());
+		const notes = (this.settings && this.settings.notes) || {};
+		q('.vertical-tab-nav-item[data-setting-id]').forEach((el) => {
+			const id = el.getAttribute('data-setting-id');
+			if (id && notes[id] && el.title === notes[id]) el.removeAttribute('title');
+		});
+
+		// 4. 收尾交给 Obsidian 自己：插件区按原生顺序重排 + 分组标题显隐复位
+		// （之前我们把空的"第三方插件"组设成 display:none，不撤掉的话导航项挪回去也看不见）
+		if (commItems) {
+			const commGroup = commItems.closest('.vertical-tab-header-group');
+			if (commGroup) commGroup.style.removeProperty('display');
+		}
+		const setting = this.app && this.app.setting;
+		if (setting && typeof setting.updatePluginSection === 'function') setting.updatePluginSection();
 	}
 
 	async saveSettings() {
