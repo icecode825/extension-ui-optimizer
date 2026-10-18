@@ -79,3 +79,38 @@ body .vertical-tab-header .extension-ui-optimizer-hidden {
 .extension-ui-optimizer-list-heading .setting-item-name {
 	font-weight: 700;
 }
+
+/* ---------- 手机端 ---------- */
+
+/* 图标网格：一行 8 个在手机上太挤，改 5 个并加大触摸热区 */
+.is-mobile .extension-ui-optimizer-icon-grid {
+	grid-template-columns: repeat(5, 1fr);
+	gap: 8px;
+}
+
+.is-mobile .extension-ui-optimizer-icon-cell {
+	padding: 12px;
+}
+
+.is-mobile .extension-ui-optimizer-icon-swatch {
+	width: 24px;
+	height: 24px;
+}
+
+.is-mobile .extension-ui-optimizer-icon-swatch svg {
+	width: 22px;
+	height: 22px;
+}
+
+/* 插件行右侧有 备注/隐藏/分组/开关 四件套，手机上允许换行，避免横向溢出 */
+.is-mobile .extension-ui-optimizer-row .setting-item-control {
+	flex-wrap: wrap;
+	gap: 8px;
+	justify-content: flex-start;
+}
+
+/* 手机端设置列表里，分组标题两侧留白跟原生一致 */
+.is-mobile .vertical-tab-header .extension-ui-optimizer-group .vertical-tab-header-group-title {
+	margin: 8px 0 4px;
+	font-size: 12px;
+}

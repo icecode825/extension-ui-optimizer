@@ -8,9 +8,16 @@
  * - 所有行内操作就地更新 DOM，不重建页面，不闪烁、不跳动
  */
 
-const { Plugin, PluginSettingTab, Setting, Modal, Menu, setIcon } = require('obsidian');
-const fs = require('fs');
-const path = require('path');
+const { Plugin, PluginSettingTab, Setting, Modal, Menu, setIcon, Platform } = require('obsidian');
+
+/* 手机端没有 Node 运行时：fs / path / electron 一律延迟到函数里按需取，
+   顶部直接 require 会让插件在手机端整个加载失败 */
+const IS_DESKTOP = !!(Platform && Platform.isDesktopApp);
+const IS_MOBILE = !!(Platform && Platform.isMobile);
+function nodeModule(name) {
+	if (!IS_DESKTOP) return null;
+	try { return require(name); } catch (e) { return null; }
+}
 
 /* ---------------- 内置汉化表 ---------------- */
 const ZH = {
@@ -241,6 +248,11 @@ const MODAL_CSS = [
 	'.extension-ui-optimizer-icon-cell.is-active { border-color: var(--interactive-accent); }',
 	'.extension-ui-optimizer-icon-swatch { width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; }',
 	'.extension-ui-optimizer-icon-swatch svg { width: 18px; height: 18px; }',
+	/* 手机端：图标网格一行 8 个太挤，改成 5 个并加大触摸热区 */
+	'.is-mobile .extension-ui-optimizer-icon-grid { grid-template-columns: repeat(5, 1fr); gap: 8px; }',
+	'.is-mobile .extension-ui-optimizer-icon-cell { padding: 12px; }',
+	'.is-mobile .extension-ui-optimizer-icon-swatch { width: 24px; height: 24px; }',
+	'.is-mobile .extension-ui-optimizer-icon-swatch svg { width: 22px; height: 22px; }',
 ].join('\n');
 
 const DEFAULT_SETTINGS = {
@@ -271,9 +283,22 @@ module.exports = class PluginHub extends Plugin {
 		this._debounce = null;
 		this._settingsObs = null;
 		this._settingsObsTarget = null;
-		// 设置窗口渲染在独立文档中（isConnected 恒为 false），
-		// DOM 挂在 app.setting.modalEl 上，用轮询检测开关、观察器监视内部变化
+		// 桌面端设置窗口渲染在独立文档里（isConnected 恒为 false），DOM 挂在 app.setting.modalEl 上；
+		// 手机端的设置是整屏视图，同一个 modalEl 结构但也可能换节点 —— 统一走 settingsRoot() 定位
 		this._poll = setInterval(() => this.pollSettings(), 400);
+	}
+
+	/* 定位"设置窗口"的根节点：桌面 = 独立文档里的 modalEl，手机 = 整屏 modal，兜底查 .mod-settings */
+	settingsRoot() {
+		try {
+			const s = this.app && this.app.setting;
+			const modal = s && s.modalEl;
+			if (modal && modal.querySelector && modal.querySelector('.vertical-tab-header')) return modal;
+			for (const el of document.querySelectorAll('.mod-settings')) {
+				if (el.querySelector('.vertical-tab-header')) return el;
+			}
+			return null;
+		} catch (e) { return null; }
 	}
 
 	onunload() {
@@ -296,12 +321,9 @@ module.exports = class PluginHub extends Plugin {
 
 	/* 把设置侧边栏还原成 Obsidian 原生样子（禁用插件时调用） */
 	restoreSettingsDom() {
-		// 设置窗口渲染在独立文档（弹出窗口）里，主窗口 document 查不到它的节点，
-		// 所以要从 app.setting.modalEl 取根节点来查（以前直接查 document，一个都找不到）
-		let root = null;
-		try {
-			root = (this.app && this.app.setting && this.app.setting.modalEl) || null;
-		} catch (e) { root = null; }
+		// 设置窗口在桌面端是独立文档（主窗口 document 查不到），手机端是整屏 modal，
+		// 统一用 settingsRoot() 取根节点来查（以前直接查 document，一个都找不到）
+		const root = this.settingsRoot();
 		const scope = root || document;
 		const q = (selector) => Array.from(scope.querySelectorAll(selector));
 
@@ -351,13 +373,19 @@ module.exports = class PluginHub extends Plugin {
 	}
 
 	pluginConfigPath(pid, file) {
+		const nodePath = nodeModule('path');
 		const adapter = this.app.vault.adapter;
-		if (!adapter || !adapter.basePath) return null;
-		return path.join(adapter.basePath, '.obsidian', 'plugins', pid, file);
+		if (!nodePath || !adapter || !adapter.basePath) return null;
+		return nodePath.join(adapter.basePath, '.obsidian', 'plugins', pid, file);
 	}
 
 	/* 迁移 Plugins Annotations 的备注和 Settings Sidebar Organizer 的分组 */
 	async migrateExternalData() {
+		// 迁移要读别的插件目录里的 data.json，手机端没有 fs。
+		// 直接返回、不写任何"已迁移"标记，这样换到桌面端还会再跑一次。
+		if (!IS_DESKTOP) return;
+		const fs = nodeModule('fs');
+		if (!fs) return;
 		let changed = false;
 
 		// 备注：一次性给已有备注加 "# " 前缀（之后以编辑框内容为准，可删）
@@ -473,9 +501,15 @@ module.exports = class PluginHub extends Plugin {
 	syncLazyLoader(pid, startupType) {
 		try {
 			const lz = this.app.plugins.plugins['lazy-plugins'];
-			if (!lz || !lz.settings) return;
-			if (!lz.settings.plugins) lz.settings.plugins = {};
-			lz.settings.plugins[pid] = { startupType };
+			if (!lz) return;
+			// dualConfigs 开启时 lz.settings 本身就是当前平台那一份（desktop / mobile），
+			// 取不到时退回读 lz.data 的平台分支
+			const block = (lz.settings && lz.settings.plugins)
+				? lz.settings
+				: (lz.data && lz.data[IS_MOBILE ? 'mobile' : 'desktop']);
+			if (!block) return;
+			if (!block.plugins) block.plugins = {};
+			block.plugins[pid] = { startupType };
 			lz.saveSettings();
 		} catch (e) { /* ignore */ }
 	}
@@ -518,9 +552,16 @@ module.exports = class PluginHub extends Plugin {
 			.setTitle('查看详情')
 			.setIcon('info')
 			.onClick(() => {
+				// 手机端没有独立窗口可以开 obsidian:// 链接，改成在设置里定位到该插件
+				if (IS_MOBILE) {
+					try {
+						const tab = this.app.setting.openTabById('community-plugins');
+						if (tab && typeof tab.revealPlugin === 'function') tab.revealPlugin(pid);
+					} catch (e) { /* ignore */ }
+					return;
+				}
 				try {
-					const setting = this.app.setting;
-					const chain = setting && setting.modalEl ? this.getScrollChain(setting.modalEl) : [];
+					const chain = this.getScrollChain(this.settingsRoot());
 					const prev = chain.map((el) => el.scrollTop);
 					window.open('obsidian://show-plugin?id=' + pid);
 					[300, 800, 1500, 2500].forEach((d) => setTimeout(() => {
@@ -556,14 +597,18 @@ module.exports = class PluginHub extends Plugin {
 			.setTitle('检查更新')
 			.setIcon('refresh-cw')
 			.onClick(() => this.app.plugins.checkForUpdates()));
-		menu.addItem((item) => item
-			.setTitle('打开插件文件夹')
-			.setIcon('folder-open')
-			.onClick(() => {
-				try {
-					require('electron').shell.openPath(this.pluginConfigPath(pid, ''));
-				} catch (e) { /* ignore */ }
-			}));
+		// 手机端没有"文件夹"可打开，这一项直接不出现
+		if (IS_DESKTOP) {
+			menu.addItem((item) => item
+				.setTitle('打开插件文件夹')
+				.setIcon('folder-open')
+				.onClick(() => {
+					try {
+						const electron = nodeModule('electron');
+						if (electron && electron.shell) electron.shell.openPath(this.pluginConfigPath(pid, ''));
+					} catch (e) { /* ignore */ }
+				}));
+		}
 		menu.addSeparator();
 		// 不允许卸载自己（插件运行中卸载自身会导致界面失效）
 		if (pid !== this.manifest.id) {
@@ -585,15 +630,58 @@ module.exports = class PluginHub extends Plugin {
 					}).open();
 				}));
 		}
-		menu.showAtMouseEvent(ev);
+		// 长按触发时只有坐标没有鼠标事件，用 showAtPosition 定位
+		if (ev && ev.type === 'contextmenu' && typeof menu.showAtMouseEvent === 'function') menu.showAtMouseEvent(ev);
+		else menu.showAtPosition({ x: (ev && ev.clientX) || 0, y: (ev && ev.clientY) || 0 });
+	}
+
+	/* 右键菜单 + 手机长按菜单（手机没有右键，用长按 500ms 代替） */
+	bindContextMenu(el, resolvePid) {
+		if (!el) return;
+		el.addEventListener('contextmenu', (ev) => {
+			let pid = null;
+			try { pid = resolvePid(ev.target); } catch (e) { pid = null; }
+			if (!pid) return;
+			ev.preventDefault();
+			ev.stopPropagation();
+			this.showPluginMenu(ev, pid);
+		}, true);
+		if (!IS_MOBILE) return;
+		let timer = null;
+		let sx = 0;
+		let sy = 0;
+		let moved = false;
+		const cancel = () => { clearTimeout(timer); timer = null; };
+		el.addEventListener('touchstart', (ev) => {
+			if (!ev.touches || ev.touches.length !== 1) { cancel(); return; }
+			const t = ev.touches[0];
+			sx = t.clientX; sy = t.clientY; moved = false;
+			cancel();
+			timer = setTimeout(() => {
+				timer = null;
+				if (moved) return;
+				let pid = null;
+				try { pid = resolvePid(ev.target); } catch (e) { pid = null; }
+				if (!pid) return;
+				// 长按生效后阻止随后的点击（避免顺带打开该设置页）
+				el.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); }, { capture: true, once: true });
+				this.showPluginMenu({ type: 'longpress', clientX: sx, clientY: sy }, pid);
+			}, 500);
+		}, { passive: true });
+		el.addEventListener('touchmove', (ev) => {
+			const t = ev.touches && ev.touches[0];
+			if (!t) return;
+			if (Math.abs(t.clientX - sx) > 12 || Math.abs(t.clientY - sy) > 12) { moved = true; cancel(); }
+		}, { passive: true });
+		el.addEventListener('touchend', cancel, { passive: true });
+		el.addEventListener('touchcancel', cancel, { passive: true });
 	}
 
 	/* ---------- 设置窗口轮询与 DOM 增强 ---------- */
 	pollSettings() {
 		try {
-			const setting = this.app.setting;
-			if (!setting || !setting.modalEl) return;
-			const root = setting.modalEl;
+			const root = this.settingsRoot();
+			if (!root) return;
 			const open = root.querySelector('.vertical-tab-header') !== null;
 			if (open) {
 				// 已安装插件集合变化（安装/卸载）时立刻重建列表，无需重开设置页
@@ -616,28 +704,19 @@ module.exports = class PluginHub extends Plugin {
 						this._debounce = setTimeout(() => this.applyToSettingsDom(), 80);
 					});
 					this._settingsObs.observe(root, { childList: true, subtree: true });
-					// 捕获阶段拦截导航项右键，弹出自定义菜单（阻止原生菜单）
-					if (!this._ctxHandler) {
-						this._ctxHandler = (ev) => {
-							try {
-								const item = ev.target.closest('.vertical-tab-nav-item[data-setting-id]');
-								if (!item) return;
-								const pid = item.getAttribute('data-setting-id');
-								if (!pid || !this.app.plugins.manifests[pid]) return; // 核心插件走原生菜单
-								ev.preventDefault();
-								ev.stopPropagation();
-								this.showPluginMenu(ev, pid);
-							} catch (e) { /* ignore */ }
-						};
-					}
-					root.addEventListener('contextmenu', this._ctxHandler, true);
+					// 导航项：桌面右键 / 手机长按 弹自定义菜单（核心插件放行原生行为）
+					this.bindContextMenu(root, (target) => {
+						const item = target && target.closest ? target.closest('.vertical-tab-nav-item[data-setting-id]') : null;
+						if (!item) return null;
+						const pid = item.getAttribute('data-setting-id');
+						return (pid && this.app.plugins.manifests[pid]) ? pid : null;
+					});
 					this._settingsObsTarget = root;
 				}
 				this.applyToSettingsDom();
 			} else {
 				if (this._settingsObs) {
 					this._settingsObs.disconnect();
-					root.removeEventListener('contextmenu', this._ctxHandler, true);
 					this._settingsObs = null;
 					this._settingsObsTarget = null;
 				}
@@ -648,13 +727,12 @@ module.exports = class PluginHub extends Plugin {
 	}
 
 	applyToSettingsDom() {
-		const setting = this.app.setting;
-		if (!setting || !setting.modalEl) return;
-		const root = setting.modalEl;
-		if (!root.querySelector('.vertical-tab-header')) return;
-		// 把样式注入设置窗口文档（styles.css 作用不到这里）
+		const root = this.settingsRoot();
+		if (!root) return;
+		// 把样式注入设置窗口所在文档（桌面端是独立文档，styles.css 作用不到那里）
 		if (!root.querySelector('#extension-ui-optimizer-modal-styles')) {
-			const st = document.createElement('style');
+			const doc = root.ownerDocument || document;
+			const st = doc.createElement('style');
 			st.id = 'extension-ui-optimizer-modal-styles';
 			st.textContent = MODAL_CSS;
 			root.appendChild(st);
@@ -705,6 +783,8 @@ module.exports = class PluginHub extends Plugin {
 		const groups = this.settings.groups || [];
 		const assign = this.settings.pluginGroup || {};
 		const groupIcons = this.settings.groupIcons || {};
+		// 桌面端设置窗口在独立文档里，节点必须用同一份 document 创建
+		const doc = commItems.ownerDocument || document;
 
 		// 每个分组都立即在侧边栏占位（新建的空分组也马上可见，便于确认与拖放归属）
 		const usedGroups = groups;
@@ -712,13 +792,13 @@ module.exports = class PluginHub extends Plugin {
 		for (const name of usedGroups) {
 			let grp = header.querySelector(`:scope > .extension-ui-optimizer-group[data-hub-group="${CSS.escape(name)}"]`);
 			if (!grp) {
-				grp = document.createElement('div');
+				grp = doc.createElement('div');
 				grp.className = 'vertical-tab-header-group extension-ui-optimizer-group';
 				grp.dataset.hubGroup = name;
-				const title = document.createElement('div');
+				const title = doc.createElement('div');
 				title.className = 'vertical-tab-header-group-title';
 				title.textContent = name;
-				const itemsDiv = document.createElement('div');
+				const itemsDiv = doc.createElement('div');
 				itemsDiv.className = 'vertical-tab-header-group-items';
 				grp.append(title, itemsDiv);
 			}
@@ -993,11 +1073,8 @@ class HubTab extends PluginSettingTab {
 				}
 			};
 
-			// 右键菜单：与侧边栏导航项共用
-			if (row.settingEl) row.settingEl.addEventListener('contextmenu', (ev) => {
-				ev.preventDefault();
-				p.showPluginMenu(ev, m.id);
-			});
+			// 右键菜单：与侧边栏导航项共用（手机端改成长按 500ms）
+			if (row.settingEl) p.bindContextMenu(row.settingEl, () => m.id);
 
 			row.addButton((b) => b
 				.setIcon('pencil')
@@ -1062,7 +1139,8 @@ class HubTab extends PluginSettingTab {
 		this.startRefresher();
 
 		const footer = containerEl.createEl('p', { cls: 'setting-item-description' });
-		footer.setText('提示：在这里禁用的插件会同时被 Lazy Loader 记为“禁用”，重启后不会被自动拉起；右键插件行或侧边栏项有卸载、更新、打开文件夹等更多操作。');
+		footer.setText('提示：在这里禁用的插件会同时被 Lazy Loader 记为“禁用”，重启后不会被自动拉起；'
+			+ (IS_MOBILE ? '长按插件行有备注、隐藏、更新、卸载等更多操作。' : '右键插件行或侧边栏项有卸载、更新、打开文件夹等更多操作。'));
 
 		// 让"全部社区插件"标题与"分组管理"h3 的字重字号完全一致（内联样式，所见即所得）
 		const syncHeading = () => {

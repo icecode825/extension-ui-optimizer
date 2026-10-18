@@ -25,10 +25,14 @@ For manual installation, grab `main.js`, `manifest.json`, and `styles.css` from 
 
 Open **Settings → Extension UI Optimizer** (or the grid icon in the left ribbon). Hover a sidebar entry to read its note; right-click any plugin row or sidebar item for more actions.
 
+## Mobile
+
+Works on Obsidian mobile too (long-press a row or a sidebar entry instead of right-clicking). Sidebar grouping and hiding apply to the mobile settings list; the folder-opening and "view details" window actions are desktop-only and simply don't appear on phones.
+
 ## Notes
 
-- Desktop only (uses Node.js `fs` and Electron APIs).
 - No network access; everything runs locally.
+- Desktop-only bits (reading other plugins' `data.json` for one-time migration, opening the plugin folder) are skipped automatically on mobile.
 
 ---
 
@@ -57,7 +61,11 @@ Open **Settings → Extension UI Optimizer** (or the grid icon in the left ribbo
 
 打开 *设置 → Extension UI Optimizer*（或左侧栏的网格图标）。侧边栏条目悬浮可看备注；右键任意插件行或侧边栏项有更多操作。
 
+### 手机端
+
+手机上也能用：把"右键"换成**长按**（插件行、侧边栏项都支持）。分组与隐藏在手机设置列表里同样生效；"打开插件文件夹"和"查看详情"窗口是桌面专属，手机上不显示。
+
 ### 说明
 
-- 仅桌面端（使用了 Node.js fs 与 Electron API）
 - 不访问网络，全部本地运行
+- 桌面专属的部分（读取其他插件 `data.json` 做一次性迁移、打开插件文件夹）在手机上自动跳过
